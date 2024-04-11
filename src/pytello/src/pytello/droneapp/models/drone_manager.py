@@ -334,41 +334,45 @@ class DroneManager(metaclass=Singleton):
     def video_jpeg_generator(self):
         for frame in self.video_binary_generator():
             
-            if self.camera == 1:
-                frame = frame[0:240, 0:320]
+            # if self.camera == 1:
+            #     frame = frame[0:240, 0:320]
 
             self.num_frames_total += 1
             _, jpeg = cv.imencode('.jpg', frame)
             jpeg_binary = jpeg.tobytes()
 
-            if self.is_track and self.num_frames_total % 4 == 0:
+            if self.is_track and self.num_frames_total % 5 == 0:
                 #Run YOLOv8 inference on the frame
                 results = self.model(frame, verbose=False)
 
                 # View results
                 for r in results:
                     print(r.boxes)
+                    drone_x, drone_y, drone_z, speed = 0, 0, 0, self.speed
                     if len(r.boxes.cls) > 0:
                         i = int(r.boxes.cls[0])
                         print(r.names[i])
                         
-                        if i == 14 or i == 15 or i == 16: # es un gato
-                            x, y, x2, y2 = r.boxes.xyxy[0]
-                            # Convierte las coordenadas de punto flotante a enteros
-                            x, y, x2, y2 = int(x), int(y), int(x2), int(y2)
+                        x, y, x2, y2 = r.boxes.xyxy[0]
+                        # Convierte las coordenadas de punto flotante a enteros
+                        x, y, x2, y2 = int(x), int(y), int(x2), int(y2)
 
-                            x_center, y_center, w, h = r.boxes.xywh[0]
+                        x_center, y_center, w, h = r.boxes.xywh[0]
 
-                            x_center, y_center, w, h = int(x_center), int(y_center), int(w), int(h)
+                        x_center, y_center, w, h = int(x_center), int(y_center), int(w), int(h)
 
-                            cv.rectangle(frame, (x, y), (x2, y2), (255, 0, 0), 2)
+                        cv.rectangle(frame, (x, y), (x2, y2), (255, 0, 0), 2)
 
-                            diff_x = FRAME_CENTER_X - x_center
-                            diff_y = FRAME_CENTER_Y - y_center
-                            area = w * h
-                            percent = area / FRAME_AREA
+                        diff_x = FRAME_CENTER_X - x_center
+                        diff_y = FRAME_CENTER_Y - y_center
+                        area = w * h
+                        percent = area / FRAME_AREA
+                        if (i == 14 or i == 15) and 0.8 > percent > 0.005: # es un gato
 
-                            drone_x, drone_y, drone_z, speed = 0, 0, 0, self.speed
+                            # if percent > 0.35:
+                            #     drone_z = 20
+                            # if percent < 0.05:
+                            #     drone_z = -20
                             if diff_x < -25:
                                 drone_x = -20
                             if diff_x > 25:
@@ -377,10 +381,7 @@ class DroneManager(metaclass=Singleton):
                                 drone_y = 20
                             if diff_y > 25:
                                 drone_y = -20
-                            if percent > 0.3:
-                                drone_z = -20
-                            if percent < 0.05:
-                                drone_z = -20
+
 
                             self.send_command(f'go {drone_x} {drone_y} {drone_z} {speed}', 
                                         blocking=False)
@@ -388,10 +389,13 @@ class DroneManager(metaclass=Singleton):
                             if drone_x == 0 and drone_y == 0 and drone_z == 0:
                                 self.centrado += 1
 
-                            if self.centrado >= 10:
-                                self.send_command('land')
-                                self.is_track = False
+                            if self.centrado >= 2:
+                                self.send_command('land', blocking=True)
+                            
                             break
+                    else:
+                        self.send_command(f'go {drone_x} {drone_y} {drone_z} {speed}', 
+                                        blocking=False)
                     
                 # Display the annotated frame
                 _, jpeg = cv.imencode('.jpg', frame)
@@ -544,6 +548,8 @@ class DroneManager(metaclass=Singleton):
 
     def track(self):
         self.centrado = 0
+        self.send_command(f'down {20}', blocking = True)
+        time.sleep(3)
         self.is_track = True
 
     def stopTrack(self):
