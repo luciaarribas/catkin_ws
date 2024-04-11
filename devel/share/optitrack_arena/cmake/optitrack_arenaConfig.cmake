@@ -1,0 +1,1 @@
+/home/lucia/catkin_ws/devel/.private/optitrack_arena/share/optitrack_arena/cmake/optitrack_arenaConfig.cmake

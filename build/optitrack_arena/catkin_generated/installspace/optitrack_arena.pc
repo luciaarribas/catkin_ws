@@ -1,0 +1,8 @@
+prefix=/home/lucia/catkin_ws/install
+
+Name: optitrack_arena
+Description: Description of optitrack_arena
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: roscpp std_msgs tf2 tf2_ros

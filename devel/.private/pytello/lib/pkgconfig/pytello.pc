@@ -1,0 +1,8 @@
+prefix=/home/lucia/catkin_ws/devel/.private/pytello
+
+Name: pytello
+Description: Description of pytello
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

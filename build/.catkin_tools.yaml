@@ -1,0 +1,6 @@
+devel_space: /home/lucia/catkin_ws/devel
+install: false
+install_space: /home/lucia/catkin_ws/install
+profile: default
+source_space: /home/lucia/catkin_ws/src
+workspace: /home/lucia/catkin_ws

@@ -1,0 +1,8 @@
+pytello
+/home/lucia/catkin_ws/devel/.private/pytello/cmake.lock /home/lucia/catkin_ws/devel/./cmake.lock
+/home/lucia/catkin_ws/devel/.private/pytello/share/pytello/cmake/pytelloConfig-version.cmake /home/lucia/catkin_ws/devel/share/pytello/cmake/pytelloConfig-version.cmake
+/home/lucia/catkin_ws/devel/.private/pytello/share/pytello/cmake/pytelloConfig.cmake /home/lucia/catkin_ws/devel/share/pytello/cmake/pytelloConfig.cmake
+/home/lucia/catkin_ws/devel/.private/pytello/lib/pytello/main.py /home/lucia/catkin_ws/devel/lib/pytello/main.py
+/home/lucia/catkin_ws/devel/.private/pytello/lib/pytello/cmake.lock /home/lucia/catkin_ws/devel/lib/pytello/cmake.lock
+/home/lucia/catkin_ws/devel/.private/pytello/lib/python3/dist-packages/pytello/__init__.py /home/lucia/catkin_ws/devel/lib/python3/dist-packages/pytello/__init__.py
+/home/lucia/catkin_ws/devel/.private/pytello/lib/pkgconfig/pytello.pc /home/lucia/catkin_ws/devel/lib/pkgconfig/pytello.pc

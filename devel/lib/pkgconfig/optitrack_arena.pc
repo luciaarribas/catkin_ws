@@ -1,0 +1,1 @@
+/home/lucia/catkin_ws/devel/.private/optitrack_arena/lib/pkgconfig/optitrack_arena.pc

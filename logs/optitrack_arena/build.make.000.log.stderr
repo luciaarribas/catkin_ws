@@ -1,0 +1,7 @@
+[01m[K/home/lucia/catkin_ws/src/optitrack_arena/src/optitrack_pose_tf.cpp:9:10:[m[K [01;31m[Kfatal error: [m[Ktf2_sensor_msgs/tf2_sensor_msgs.h: No existe el archivo o el directorio
+    9 | #include [01;31m[K<tf2_sensor_msgs/tf2_sensor_msgs.h>[m[K
+      |          [01;31m[K^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+compilation terminated.
+make[2]: *** [CMakeFiles/optitrack_pose_tf.dir/build.make:63: CMakeFiles/optitrack_pose_tf.dir/src/optitrack_pose_tf.cpp.o] Error 1
+make[1]: *** [CMakeFiles/Makefile2:553: CMakeFiles/optitrack_pose_tf.dir/all] Error 2
+make: *** [Makefile:141: all] Error 2

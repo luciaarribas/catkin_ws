@@ -1,0 +1,1 @@
+/home/lucia/catkin_ws/devel/.private/pytello/share/pytello/cmake/pytelloConfig.cmake
