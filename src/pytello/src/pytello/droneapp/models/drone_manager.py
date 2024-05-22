@@ -123,6 +123,10 @@ class DroneManager(metaclass=Singleton):
         self.is_track = False
         self.centrado = 0
 
+        self.lejosXY = 0
+        self.lejosX = 0
+        self.lejosY = 0
+
         self.send_command('command')
         self.send_command('downvision 0')
         self.send_command('downvision 1')
@@ -342,12 +346,21 @@ class DroneManager(metaclass=Singleton):
             jpeg_binary = jpeg.tobytes()
 
             if self.is_track and self.num_frames_total % 5 == 0:
+                t3 = time.time()
                 #Run YOLOv8 inference on the frame
+                t1 = time.time()
                 results = self.model(frame, verbose=False)
+                t2 = time.time()
+                print("timpo yolo", t2-t1)
 
+                # self.frame_queue.put(frame)
+
+                # results = self.results_queue.get()
+                if not results:
+                    print("no results")
+                    self.send_command('stop')
                 # View results
                 for r in results:
-                    print(r.boxes)
                     drone_x, drone_y, drone_z, speed = 0, 0, 0, self.speed
                     if len(r.boxes.cls) > 0:
                         i = int(r.boxes.cls[0])
@@ -361,45 +374,81 @@ class DroneManager(metaclass=Singleton):
 
                         x_center, y_center, w, h = int(x_center), int(y_center), int(w), int(h)
 
-                        cv.rectangle(frame, (x, y), (x2, y2), (255, 0, 0), 2)
-
                         diff_x = FRAME_CENTER_X - x_center
                         diff_y = FRAME_CENTER_Y - y_center
+
                         area = w * h
                         percent = area / FRAME_AREA
-                        if (i == 14 or i == 15) and 0.8 > percent > 0.005: # es un gato
+                        print("percent", percent, "area", area)
+                        if (i == 74) and 0.35 > percent > 0.03: # es un gato
 
-                            # if percent > 0.35:
-                            #     drone_z = 20
-                            # if percent < 0.05:
-                            #     drone_z = -20
-                            if diff_x < -25:
-                                drone_x = -20
-                            if diff_x > 25:
-                                drone_x = 20
-                            if diff_y < -25:
-                                drone_y = 20
-                            if diff_y > 25:
-                                drone_y = -20
+                            cv.rectangle(frame, (x, y), (x2, y2), (255, 0, 0), 2)
+                            # if perc
+                            v_speed_x = 0
+                            v_speed_y = 0
+                            w_speed = 0
+                            print("frame center x", FRAME_CENTER_X)
+                            print("x center", x_center)
+                            print("y center", y_center)
+                            print("frame center y", FRAME_CENTER_Y)
+                            print("diff x", diff_x)
+                            print("diff y", diff_y)
+                            if abs(diff_x) >= 40:
+                                v_speed_x = diff_x / 8
+                                if abs(diff_x) >= 100:
+                                    v_speed_x = diff_x / 12
+                                    
+
+                            # if abs(diff_x) >= 50:
+                            #     w_speed = -diff_x / 6
+
+                            if abs(diff_y) >= 40: 
+                                v_speed_y = diff_y / 8
+                                if abs(diff_y) >= 90:
+                                    v_speed_y = diff_y / 12
+
+                            if abs(diff_y) >= 75 and abs(diff_x) >= 90:
+                                self.lejosXY += 1
+                            elif abs(diff_x) >= 90:
+                                self.lejosX += 1
+                            elif abs(diff_y) >= 75:
+                                self.lejosY += 1
 
 
-                            self.send_command(f'go {drone_x} {drone_y} {drone_z} {speed}', 
-                                        blocking=False)
-
-                            if drone_x == 0 and drone_y == 0 and drone_z == 0:
+                            if abs(diff_x) < 40 and (abs(diff_y) < 40):
+                                print("centrado")
+                                self.send_command('stop')
+                                time.sleep(1)
+                                self.send_command(f'rc 0 0 0 0', blocking=False)
                                 self.centrado += 1
+                                # time.sleep(2)
+                                # print("land")
+                                # self.send_command('land')
+                                # self.is_track = False
+                            else:
+                                self.send_command(f'rc {v_speed_y} {v_speed_x} 0 {w_speed}', blocking=False)
+                                self.centrado = 0
 
-                            if self.centrado >= 2:
-                                self.send_command('land', blocking=True)
+                            if self.centrado >= 5:
+                                print("land")
+                                self.send_command('land')
+                                self.is_track = False
+
                             
                             break
-                    else:
-                        self.send_command(f'go {drone_x} {drone_y} {drone_z} {speed}', 
-                                        blocking=False)
-                    
+                        
+                        else:
+                            self.send_command('stop')
+                        #     time.sleep(2)
+                        #     self.send_command(f'rc 0 0 0 0', blocking=False)
+                        #     time.sleep(2)
+                                         
+                        
                 # Display the annotated frame
                 _, jpeg = cv.imencode('.jpg', frame)
                 jpeg_binary = jpeg.tobytes()
+                t4 = time.time()
+                print("tiempo frame yolo", t4-t3)
 
             if self._is_enable_face_detect:
                 if self.is_patrol:
@@ -548,9 +597,19 @@ class DroneManager(metaclass=Singleton):
 
     def track(self):
         self.centrado = 0
-        self.send_command(f'down {20}', blocking = True)
-        time.sleep(3)
+        # self.send_command(f'down {20}', blocking = True)
+        # time.sleep(3)
         self.is_track = True
 
     def stopTrack(self):
         self.is_track = False
+        fichero_tello = f"no_centrado_{time.strftime('%Y%m%d_%H%M%S')}.txt"
+        with open(fichero_tello, 'a') as fichero:
+            # Escribe la información recibida
+            fichero.write("Veces que se ha salido del area central:\n")
+            fichero.write("X:" + str(self.lejosX) + "\n")
+            fichero.write("Y:" + str(self.lejosY) + "\n")
+            fichero.write("Ambos:" + str(self.lejosXY) + "\n")
+        self.lejosX = 0
+        self.lejosY = 0
+        self.lejosXY = 0

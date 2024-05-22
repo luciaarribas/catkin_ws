@@ -8,7 +8,7 @@
 
 # modified environment variables
 export CMAKE_PREFIX_PATH="/home/lucia/catkin_ws/devel/.private/pytello:$CMAKE_PREFIX_PATH"
-export LD_LIBRARY_PATH="/home/lucia/catkin_ws/devel/.private/pytello/lib:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH='/home/lucia/catkin_ws/devel/.private/pytello/lib:/home/lucia/catkin_ws/devel/lib:/opt/ros/noetic/lib:/home/lucia/miniconda3/lib/libcudart.so.11.0'
 export PKG_CONFIG_PATH="/home/lucia/catkin_ws/devel/.private/pytello/lib/pkgconfig:$PKG_CONFIG_PATH"
 export PWD='/home/lucia/catkin_ws/build/pytello'
 export PYTHONPATH="/home/lucia/catkin_ws/devel/.private/pytello/lib/python3/dist-packages:$PYTHONPATH"
