@@ -393,6 +393,36 @@ class DroneManager(metaclass=Singleton):
                             print("frame center y", FRAME_CENTER_Y)
                             print("diff x", diff_x)
                             print("diff y", diff_y)
+                            if abs(diff_y) >= 75 and abs(diff_x) >= 90:
+                                self.lejosXY += 1
+                            elif abs(diff_x) >= 90:
+                                self.lejosX += 1
+                            elif abs(diff_y) >= 75:
+                                self.lejosY += 1
+
+                            # distancias
+                            # if diff_x < -40:
+                            #     drone_x = -20
+                            # if diff_x > 40:
+                            #     drone_x = 20
+                            # if diff_y < -40:
+                            #     drone_y = 20
+                            # if diff_y > 40:
+                            #     drone_y = -20
+
+
+                            
+
+                            # if drone_x == 0 and drone_y == 0 and drone_z == 0:
+                            #     self.send_command('stop')
+                            #     self.centrado += 1
+
+                            # else:
+                            #     self.send_command(f'go {drone_x} {drone_y} {drone_z} {speed}', blocking=False)
+                            #     self.centrado = 0
+
+
+                            # velocidades
                             if abs(diff_x) >= 40:
                                 v_speed_x = diff_x / 8
                                 if abs(diff_x) >= 100:
@@ -407,12 +437,6 @@ class DroneManager(metaclass=Singleton):
                                 if abs(diff_y) >= 90:
                                     v_speed_y = diff_y / 12
 
-                            if abs(diff_y) >= 75 and abs(diff_x) >= 90:
-                                self.lejosXY += 1
-                            elif abs(diff_x) >= 90:
-                                self.lejosX += 1
-                            elif abs(diff_y) >= 75:
-                                self.lejosY += 1
 
 
                             if abs(diff_x) < 40 and (abs(diff_y) < 40):
