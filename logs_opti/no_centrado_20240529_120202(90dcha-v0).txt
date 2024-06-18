@@ -1,0 +1,4 @@
+Veces que se ha salido del area central:
+X:40
+Y:6
+Ambos:3

@@ -6,6 +6,7 @@ import subprocess
 import threading
 import time
 import rospy
+import math
 
 import cv2 as cv
 import numpy as np
@@ -126,6 +127,8 @@ class DroneManager(metaclass=Singleton):
         self.lejosXY = 0
         self.lejosX = 0
         self.lejosY = 0
+        self.fichero_dist = None
+        self.start_time = 0
 
         self.send_command('command')
         self.send_command('downvision 0')
@@ -199,7 +202,9 @@ class DroneManager(metaclass=Singleton):
             logger.warning({'action': 'send_command', 'command': command, 'status': 'not_acquire'})
 
     def takeoff(self):
-        return self.send_command('takeoff')
+        self.send_command('takeoff')
+        time.sleep(2)
+        return self.send_command(f'rc 0 0 0 0', blocking=False)
 
     def emergency(self):
         return self.send_command('emergency')
@@ -341,11 +346,12 @@ class DroneManager(metaclass=Singleton):
             # if self.camera == 1:
             #     frame = frame[0:240, 0:320]
 
+
             self.num_frames_total += 1
             _, jpeg = cv.imencode('.jpg', frame)
             jpeg_binary = jpeg.tobytes()
 
-            if self.is_track and self.num_frames_total % 5 == 0:
+            if self.is_track and self.num_frames_total % 6 == 0:
                 t3 = time.time()
                 #Run YOLOv8 inference on the frame
                 t1 = time.time()
@@ -393,12 +399,6 @@ class DroneManager(metaclass=Singleton):
                             print("frame center y", FRAME_CENTER_Y)
                             print("diff x", diff_x)
                             print("diff y", diff_y)
-                            if abs(diff_y) >= 75 and abs(diff_x) >= 90:
-                                self.lejosXY += 1
-                            elif abs(diff_x) >= 90:
-                                self.lejosX += 1
-                            elif abs(diff_y) >= 75:
-                                self.lejosY += 1
 
                             # distancias
                             # if diff_x < -40:
@@ -453,10 +453,35 @@ class DroneManager(metaclass=Singleton):
                                 self.send_command(f'rc {v_speed_y} {v_speed_x} 0 {w_speed}', blocking=False)
                                 self.centrado = 0
 
-                            if self.centrado >= 5:
+                            if self.centrado >= 20:
                                 print("land")
                                 self.send_command('land')
                                 self.is_track = False
+
+                            if abs(diff_y) >= 75 and abs(diff_x) >= 90:
+                                self.lejosXY += 1
+                            elif abs(diff_x) >= 90:
+                                self.lejosX += 1
+                            elif abs(diff_y) >= 75:
+                                self.lejosY += 1
+
+                            distance = math.sqrt(diff_x**2 + diff_y**2)
+
+                            # Calcular la distancia euclidiana
+                            with open(self.fichero_dist, 'a') as fichero:
+                                # Escribe la información recibida
+                                elapsed_time = time.time() - self.start_time
+                                fichero.write(str(elapsed_time) + " " + str(distance) + "\n")
+                            
+                            with open("datos_X.txt", 'a') as fichero:
+                            # Escribe la información recibida
+                                elapsed_time = time.time() - self.start_time
+                                fichero.write(str(elapsed_time) + " " + str(diff_x) + "\n")
+                            # Calcular la distancia euclidiana
+                            with open("datos_Y.txt", 'a') as fichero:
+                                # Escribe la información recibida
+                                elapsed_time = time.time() - self.start_time
+                                fichero.write(str(elapsed_time) + " " + str(diff_y) + "\n")
 
                             
                             break
@@ -473,6 +498,18 @@ class DroneManager(metaclass=Singleton):
                 jpeg_binary = jpeg.tobytes()
                 t4 = time.time()
                 print("tiempo frame yolo", t4-t3)
+            
+            red_color = (0, 0, 255) # OpenCV utiliza BGR, así que el rojo es (0, 0, 255)
+    
+            # Supongamos que tienes una instancia de frame a la que quieres añadir un cuadrado rojo
+            top_left = (70, 45)  # Coordenadas del vértice superior izquierdo del cuadrado
+            bottom_right = (250, 195)  # Coordenadas del vértice inferior derecho del cuadrado
+
+            # El grosor del cuadrado, -1 significa que se rellena
+            thickness = 2
+            
+            # Dibuja el cuadrado rojo en el frame
+            cv.rectangle(frame, top_left, bottom_right, red_color, thickness)
 
             if self._is_enable_face_detect:
                 if self.is_patrol:
@@ -623,9 +660,12 @@ class DroneManager(metaclass=Singleton):
         self.centrado = 0
         # self.send_command(f'down {20}', blocking = True)
         # time.sleep(3)
+        self.fichero_dist = f"dist_centro_{time.strftime('%Y%m%d_%H%M%S')}.txt"
+        self.start_time = time.time()
         self.is_track = True
 
     def stopTrack(self):
+        self.send_command(f'rc 0 0 0 0', blocking=False)
         self.is_track = False
         fichero_tello = f"no_centrado_{time.strftime('%Y%m%d_%H%M%S')}.txt"
         with open(fichero_tello, 'a') as fichero:

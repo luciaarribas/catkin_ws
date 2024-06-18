@@ -17,7 +17,8 @@
 import rospy
 from std_msgs.msg import String
 import subprocess
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, Pose, Point, Quaternion
+from nav_msgs.msg import Path
 import pytello.droneapp.controllers.server
 import time
 import math
@@ -33,6 +34,12 @@ fichero_resultado = f"resultados_{time_fichero}.txt"
 
 tello_position = None
 turtle_position = None
+
+tello_path_pub = None
+turtle_path_pub = None
+
+tello_path = Path()
+turtle_path = Path()
 
 def calculate_error(pos1, pos2):
     # Calcular la diferencia en posición y orientación
@@ -62,10 +69,19 @@ def callbackTello(data):
         # rospy.loginfo("tello pos %s", tello_position)
         # rospy.loginfo("turtle pos %s", turtle_position)
 
-        if tello_position != None and turtle_position != None:
-            error = calculate_error(tello_position, turtle_position)
-            guardar_resultados(tello_position, turtle_position, error)
+    if tello_position != None and turtle_position != None:
+        error = calculate_error(tello_position, turtle_position)
+        guardar_resultados(tello_position, turtle_position, error)
 
+    # Actualizar y publicar Path
+    # tello_path.header.stamp = rospy.Time.now()
+    # pose_stamped = PoseStamped()
+    # pose_stamped.header.stamp = rospy.Time.now()
+    # pose_stamped.header.frame_id = "odom"
+    # pose_stamped.pose.position = tello_position
+    # pose_stamped.pose.orientation = orientation
+    # tello_path.poses.append(pose_stamped)
+    # tello_path_pub.publish(tello_path)
 
 def callbackTurtle(data):
     global turtle_position
@@ -82,7 +98,19 @@ def callbackTurtle(data):
             str(turtle_position.z) + " " + str(orientation.x) + " " + str(orientation.y) + " " + str(orientation.z) + 
             " " + str(orientation.w) + "\n")
 
+    # Actualizar y publicar Path
+    # turtle_path.header.stamp = rospy.Time.now()
+    # pose_stamped = PoseStamped()
+    # pose_stamped.header.stamp = rospy.Time.now()
+    # pose_stamped.header.frame_id = "odom"
+    # pose_stamped.pose.position = turtle_position
+    # pose_stamped.pose.orientation = orientation
+    # turtle_path.poses.append(pose_stamped)
+    # turtle_path_pub.publish(turtle_path)
+
 def publish_terminal_output():
+    global tello_path_pub, turtle_path_pub, tello_path, turtle_path
+
     # Inicializa el nodo ROS
     
     
@@ -90,6 +118,14 @@ def publish_terminal_output():
     proceso = subprocess.Popen(['python3', 'src/pytello/scripts/init.py'], stdout=subprocess.PIPE)
     # pytello.droneapp.controllers.server.run()
     rospy.init_node('subscriber', anonymous=True)
+
+    # tello_path_pub = rospy.Publisher('/tello_path', Path, queue_size=10)
+    # turtle_path_pub = rospy.Publisher('/turtle_path', Path, queue_size=10)
+
+
+    # # Configurar los mensajes de Path
+    # tello_path.header.frame_id = "odom"
+    # turtle_path.header.frame_id = "odom"
     
     subTello = rospy.Subscriber('/vrpn_client_node/tello_3/pose', PoseStamped, callbackTello)
     subTurtle = rospy.Subscriber('/vrpn_client_node/turtlebot/pose', PoseStamped, callbackTurtle)
