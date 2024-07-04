@@ -74,14 +74,14 @@ def callbackTello(data):
         guardar_resultados(tello_position, turtle_position, error)
 
     # Actualizar y publicar Path
-    # tello_path.header.stamp = rospy.Time.now()
-    # pose_stamped = PoseStamped()
-    # pose_stamped.header.stamp = rospy.Time.now()
-    # pose_stamped.header.frame_id = "odom"
-    # pose_stamped.pose.position = tello_position
-    # pose_stamped.pose.orientation = orientation
-    # tello_path.poses.append(pose_stamped)
-    # tello_path_pub.publish(tello_path)
+    tello_path.header.stamp = rospy.Time.now()
+    pose_stamped = PoseStamped()
+    pose_stamped.header.stamp = rospy.Time.now()
+    pose_stamped.header.frame_id = "odom"
+    pose_stamped.pose.position = tello_position
+    pose_stamped.pose.orientation = orientation
+    tello_path.poses.append(pose_stamped)
+    tello_path_pub.publish(tello_path)
 
 def callbackTurtle(data):
     global turtle_position
@@ -99,14 +99,14 @@ def callbackTurtle(data):
             " " + str(orientation.w) + "\n")
 
     # Actualizar y publicar Path
-    # turtle_path.header.stamp = rospy.Time.now()
-    # pose_stamped = PoseStamped()
-    # pose_stamped.header.stamp = rospy.Time.now()
-    # pose_stamped.header.frame_id = "odom"
-    # pose_stamped.pose.position = turtle_position
-    # pose_stamped.pose.orientation = orientation
-    # turtle_path.poses.append(pose_stamped)
-    # turtle_path_pub.publish(turtle_path)
+    turtle_path.header.stamp = rospy.Time.now()
+    pose_stamped = PoseStamped()
+    pose_stamped.header.stamp = rospy.Time.now()
+    pose_stamped.header.frame_id = "odom"
+    pose_stamped.pose.position = turtle_position
+    pose_stamped.pose.orientation = orientation
+    turtle_path.poses.append(pose_stamped)
+    turtle_path_pub.publish(turtle_path)
 
 def publish_terminal_output():
     global tello_path_pub, turtle_path_pub, tello_path, turtle_path
@@ -119,13 +119,13 @@ def publish_terminal_output():
     # pytello.droneapp.controllers.server.run()
     rospy.init_node('subscriber', anonymous=True)
 
-    # tello_path_pub = rospy.Publisher('/tello_path', Path, queue_size=10)
-    # turtle_path_pub = rospy.Publisher('/turtle_path', Path, queue_size=10)
+    tello_path_pub = rospy.Publisher('/tello_path', Path, queue_size=10)
+    turtle_path_pub = rospy.Publisher('/turtle_path', Path, queue_size=10)
 
 
-    # # Configurar los mensajes de Path
-    # tello_path.header.frame_id = "odom"
-    # turtle_path.header.frame_id = "odom"
+    # Configurar los mensajes de Path
+    tello_path.header.frame_id = "odom"
+    turtle_path.header.frame_id = "odom"
     
     subTello = rospy.Subscriber('/vrpn_client_node/tello_3/pose', PoseStamped, callbackTello)
     subTurtle = rospy.Subscriber('/vrpn_client_node/turtlebot/pose', PoseStamped, callbackTurtle)
